@@ -1,106 +1,91 @@
 <?php  
-include  ('adminheader.php') ;
-include ('connection.php') ;
+include('adminheader.php');
+include('connection.php');
 ?>
 
+<style>
+    /* Smaller font and padding on small screens */
+    @media (max-width: 768px) {
+        table, th, td {
+            font-size: 12px;
+            padding: 5px !important;
+        }
+        .table-responsive {
+            font-size: 12px;
+        }
+        embed {
+            height: 150px !important;
+        }
+    }
+</style>
 
-<div class="container w-75 p-5">
-<table class="table align-middle mb-0 bg-white">
-  <thead class="bg-light text-center">
-    <tr>
-     <th>Student</th>
-      <th>Topic</th>
-      <th>Date</th>
-      <th>Status</th>
-      <th>File</th>
-      <th>Mark</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody style="text-align:center">
-  <?php
-                
-                $qry = "SELECT DISTINCT `report`.`rid`, `assignment`.*, `report`.* FROM `assignment` LEFT JOIN `report` ON `assignment`.`aid` = `report`.`assignment` ;";
+<div class="container py-4">
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle text-center">
+            <thead class="table-light">
+                <tr>
+                    <th>Student</th>
+                    <th>Topic</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>File</th>
+                    <th>Mark</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                $qry = "SELECT DISTINCT report.rid, assignment.*, report.* 
+                        FROM assignment 
+                        LEFT JOIN report ON assignment.aid = report.assignment";
 
                 $data = mysqli_query($con, $qry);
 
-                if($data){
-                while ($row = mysqli_fetch_array($data)) {
-
+                if ($data) {
+                    while ($row = mysqli_fetch_array($data)) {
+                        // Get student name
+                        $stmt = $con->prepare("SELECT name FROM student WHERE id = ?");
+                        $stmt->bind_param("i", $row['user']);
+                        $stmt->execute();
+                        $studentResult = $stmt->get_result();
+                        $studentName = ($studentRow = $studentResult->fetch_assoc()) ? $studentRow['name'] : "N/A";
                 ?>
-    <tr>
-        <td>
-        <?php
-                
-                $user_id = $row['user'];
-
-                 // Prepare the query
-                $qry8 = "SELECT * FROM `student` WHERE `id` = ?";
-                $stmt = $con->prepare($qry8);
-                $stmt->bind_param("i", $user_id);
-                $stmt->execute();
-
-                $data8 = $stmt->get_result();
-
-                if ($data8) {
-                    while ($row8 = $data8->fetch_assoc()) {
-                        echo $row8['name'];
+                <tr>
+                    <td><?php echo $studentName; ?></td>
+                    <td>
+                        <strong><?php echo $row['topic']; ?></strong><br>
+                        <small class="text-muted">Q: <?php echo $row['description']; ?></small>
+                    </td>
+                    <td><?php echo $row['time']; ?></td>
+                    <td>
+                        <?php
+                        if ($row['subdate'] > $row['time']) {
+                            echo '<span class="text-success">Early</span>';
+                        } elseif ($row['subdate'] < $row['time']) {
+                            echo '<span class="text-danger">Late</span>';
+                        } else {
+                            echo '<span class="text-warning">On Time</span>';
                         }
-                    }
-                ?>
-        </td>
-      <td>
-        <div class="d-flex align-items-center">
-          
-          <div class="ms-3">
-            <p class="fw-bold mb-1"><?php echo $row['topic'] ?></p>
-            <p class="text-muted mb-0">Q : &nbsp; <?php echo $row['description'] ?></p>
-          </div>
-        </div>
-      </td>
-      <td>
-        <p class="fw-normal mb-1"><?php echo $row['time'] ?></p>
-        
-      </td>
-      <td>
-      <?php if ($row['subdate'] > $row['time']) { ?>
-      <p class="fw-normal mb-1" style="color: green;" > Early </p>
-      <?php }else if ($row['subdate'] < $row['time']) { ?>
-        <p class="fw-normal mb-1" style="color:crimson" > Late </p>
-        <?php }else  { ?>
-            <p class="fw-normal mb-1" style="color:yellowgreen" > On Time </p>
-            <?php } ?>
-      </td>
-      <td><embed src= "<?php echo $row['file'] ?>" style="overflow: hidden;" class="viewpdf" type="application/pdf" width= "100%" height= "250"></td>
-      <td>    
-            <p class="fw-normal mb-1"  > <?php echo $row['mark'] ?> </p>
-            
-      </td>
-      
-      <?php if ($row['mark'] == 0) { ?>
-      <td>
-      <p class="fw-normal mb-1"  > Not Checked <i class="bi bi-cross-square-fill"></i></p>
-      </td>
-      </td>
-        <?php }else  { ?>
-
-            <td>
-            <p class="fw-normal mb-1"  > Checked <i class="bi bi-check-square-fill"></i></p>
-            </td>
-            <?php } ?>
-
-
-        
-       
-    </tr>
-    <?php }} ?>
-</table>
-
-
-
+                        ?>
+                    </td>
+                    <td>
+                        <embed src="<?php echo $row['file']; ?>" type="application/pdf" width="100%" height="200">
+                    </td>
+                    <td><?php echo $row['mark']; ?></td>
+                    <td>
+                        <?php
+                        if ($row['mark'] == 0) {
+                            echo '<span class="text-danger">Not Checked <i class="bi bi-x-square-fill"></i></span>';
+                        } else {
+                            echo '<span class="text-success">Checked <i class="bi bi-check-square-fill"></i></span>';
+                        }
+                        ?>
+                    </td>
+                </tr>
+                <?php }} ?>
+            </tbody>
+        </table>
+    </div>
 </div>
 
-
-<?php
-include  ('commonfooter.php') ;
-?>
+<?php include('commonfooter.php'); ?>

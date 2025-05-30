@@ -9,14 +9,14 @@ $id = $_SESSION['user'];
 
 <center>
 
-<div class="col-xl-6 wow fadeInRight" data-wow-delay="0.4s">
+<div class="col-xl-6 wow fadeInRight p-4" data-wow-delay="0.4s">
                         <div>
                             <h4 class="text-primary">Add Notes</h4><br>
                             <form method="post" enctype="multipart/form-data" >
                                 <div class="row g-3">
                                     <div class="col-lg-12 col-xl-6">
                                     <div class="form-floating">
-                                            <input type="file" name="Image" class="form-control border-0" id="project" placeholder="Image" required>
+                                            <input type="file" name="Image" accept=".pdf,.jpg,.png,.doc,.docx" class="form-control border-0" id="project" placeholder="Image" required>
                                             <label for="project" >Note</label>
                                         </div>
                                     </div>
@@ -60,23 +60,34 @@ if (isset($_POST['submit'])) {
     $class = $_POST['Class'];
     $registerno = $_POST['Desc'];
     $folder = 'media/';
-    $file = $folder . basename($_FILES['Image']['name']);
-    move_uploaded_file($_FILES['Image']['tmp_name'],$file);
     
-        // Insert user data
-        $qry2 = "INSERT INTO `notes` (`class`,`staff`, `ndesc`,`note`) VALUES ('$class','$id','$registerno','$file')";
-        echo $qry2;
-        $insertUser = mysqli_query($con, $qry2);
-        
-        // Insert login data
-        if ($insertUser) {
-           
-                echo "<script>alert('Added successfully');</script>";
-            
-        } else {
-            echo "<script>alert('Failed to Add')</script>";
-        }
+    // Debug file upload
+    if ($_FILES['Image']['error'] !== 0) {
+        echo "Upload Error: " . $_FILES['Image']['error'];
+        exit;
     }
+
+    $filename = basename($_FILES['Image']['name']);
+    $file = $folder . $filename;
+    
+    // Make sure the folder exists
+    if (!is_dir($folder)) {
+        mkdir($folder, 0777, true);
+    }
+
+    if (move_uploaded_file($_FILES['Image']['tmp_name'], $file)) {
+        $qry2 = "INSERT INTO `notes` (`class`, `staff`, `ndesc`, `note`) VALUES ('$class','$id','$registerno','$file')";
+        $insertUser = mysqli_query($con, $qry2);
+
+        if ($insertUser) {
+            echo "<script>alert('Added successfully');</script>";
+        } else {
+            echo "<script>alert('Failed to add to DB');</script>";
+        }
+    } else {
+        echo "<script>alert('File move failed');</script>";
+    }
+}
 
 
 

@@ -9,7 +9,7 @@ $id = $_SESSION['user'];
 
 <center>
 
-<div class="col-xl-6 wow fadeInRight" data-wow-delay="0.4s">
+<div class="col-xl-6 wow fadeInRight p-4" data-wow-delay="0.4s">
                         <div>
                             <h4 class="text-primary">Add Videos</h4><br>
                             <form method="post" enctype="multipart/form-data" >

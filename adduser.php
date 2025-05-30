@@ -6,7 +6,7 @@ include("connection.php");
 
 <center>
 
-<div class="col-xl-6 wow fadeInRight" data-wow-delay="0.4s">
+<div class="col-xl-6 p-4 wow fadeInRight" data-wow-delay="0.4s">
                         <div>
                             <h4 class="text-primary">Student Registration</h4><br>
                             <form method="post" enctype="multipart/form-data" >
